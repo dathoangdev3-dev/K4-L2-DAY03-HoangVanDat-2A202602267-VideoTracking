@@ -16,6 +16,10 @@ outputs/tmp_*.txt
 *.pt
 *.zip
 
+colab/
+reports/clip/
+gold/gt.txt
+reports/GUIDELINE_MINI.md
 __pycache__/
 *.py[cod]
 .ipynb_checkpoints/
