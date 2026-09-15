@@ -15,6 +15,7 @@ outputs/*
 outputs/vis_*/
 outputs/tmp_*.txt
 *.pt
+*.zip
 
 __pycache__/
 *.py[cod]
