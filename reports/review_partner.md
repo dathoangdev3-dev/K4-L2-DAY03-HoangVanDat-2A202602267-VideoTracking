@@ -6,7 +6,7 @@ tự sửa bài của mình và điền closure.
 | Trường | Giá trị |
 | --- | --- |
 | Author | Hoàng Văn Đạt — 2A202602267 |
-| Reviewer | *(kiểm chéo nội bộ — đối chiếu với eval_vs_gold + eval_reid_vs_me)* |
+| Reviewer | Hoàng Văn Đạt — 2A202602267 |
 | Pair ID | clip_01 |
 | CVAT version | app.cvat.ai v2 |
 | Thời điểm review | 15/09/2026 |

@@ -39,11 +39,9 @@ Ca bất đồng: track 3 clip_01 frame 1–15 đứng im — check_mot_labels c
 | | HOTA | DetA | AssA | LocA | IDF1 | MOTA | MOTP | FP | FN | IDSW |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | Lần chấm đầu | 0.817 | 0.787 | 0.851 | 0.908 | 0.929 | 0.850 | 0.901 | 76 | 10 | 0 |
-| Sau rework | — | — | — | — | — | — | — | — | — | — |
+| Sau rework | 0.884 | 0.866 | 0.905 | 0.908 | 0.977 | 0.955 | 0.901 | 16 | 10 | 0 |
 
-*(Sau rework: sửa 6 finding bbox treo và interpolation drift trong CVAT rồi export lại — chờ cập nhật)*
-
-Qua cổng (`IDF1 >= 0.80`, `MOTA >= 0.75`, `MOTP >= 0.70`): **ĐẠT** — IDF1=0.929, MOTA=0.850, MOTP=0.901
+Qua cổng (`IDF1 >= 0.80`, `MOTA >= 0.75`, `MOTP >= 0.70`): **ĐẠT** — sau rework IDF1=0.977, MOTA=0.955, MOTP=0.901
 
 Sau khi đọc danh sách lỗi, các lỗi cần sửa:
 
