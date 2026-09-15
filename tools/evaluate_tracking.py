@@ -1,18 +1,22 @@
 #!/usr/bin/env python3
 """Chấm một file nhãn tracking (MOT 1.1) với ground truth.
 
-Dùng cho cả ba phép so sánh của Ngày 3:
+Dùng cho các phép so sánh của Ngày 3:
 
     # 1. nhãn của bạn  vs  gold      -> chất lượng annotation (cổng qua bài)
     python3 tools/evaluate_tracking.py --pred annotations/clip_01/gt.txt \
         --gt gold/clip_01/gt.txt --seqinfo data/clips/clip_01/seqinfo.ini
 
-    # 2. model          vs  gold      -> model giỏi đến đâu
-    python3 tools/evaluate_tracking.py --pred outputs/model_clip_01.txt \
+    # 2. ByteTrack control vs gold     -> control giữ identity đến đâu
+    python3 tools/evaluate_tracking.py --pred outputs/model_bytetrack_clip_01.txt \
         --gt gold/clip_01/gt.txt --seqinfo data/clips/clip_01/seqinfo.ini
 
-    # 3. model          vs  nhãn của bạn -> chỗ bạn và model không đồng ý
-    python3 tools/evaluate_tracking.py --pred outputs/model_clip_01.txt \
+    # 3. ReID treatment vs gold         -> treatment output thay đổi điều gì
+    python3 tools/evaluate_tracking.py --pred outputs/model_reid_clip_01.txt \
+        --gt gold/clip_01/gt.txt --seqinfo data/clips/clip_01/seqinfo.ini
+
+    # 4. ReID treatment vs nhãn của bạn -> chỗ bạn và treatment không đồng ý
+    python3 tools/evaluate_tracking.py --pred outputs/model_reid_clip_01.txt \
         --gt annotations/clip_01/gt.txt --seqinfo data/clips/clip_01/seqinfo.ini
 
 Chỉ dùng thư viện chuẩn. Không cần cài gì thêm.

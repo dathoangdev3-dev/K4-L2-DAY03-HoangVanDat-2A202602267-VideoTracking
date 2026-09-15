@@ -1,14 +1,21 @@
 #!/usr/bin/env python3
 """Chạy detector + tracker trên một clip và xuất kết quả ra đúng định dạng MOT 1.1.
 
+    # Control: motion + IoU association
     python3 tools/run_tracker.py --clip data/clips/clip_01 \
         --model yolo26n.pt --tracker bytetrack.yaml \
-        --out outputs/model_clip_01.txt
+        --out outputs/model_bytetrack_clip_01.txt
+
+    # Treatment: same detector input, appearance-assisted association
+    python3 tools/run_tracker.py --clip data/clips/clip_01 \
+        --model yolo26n.pt --tracker configs/trackers/botsort-reid.yaml \
+        --out outputs/model_reid_clip_01.txt
 
 Đây chính là "tracking-by-detection" trong slide: YOLO tìm bbox trên từng frame,
-ByteTrack nối các bbox đó qua thời gian bằng Kalman + IoU. File xuất ra đọc được
-bằng cùng `tools/evaluate_tracking.py` đã dùng để chấm nhãn tay, nên có thể so
-sánh ba chiều: nhãn của bạn / nhãn model / gold.
+tracker nối các bbox đó qua thời gian. ByteTrack dùng Kalman + IoU; BoT-SORT có
+thể thêm ReID/appearance nếu YAML bật `with_reid`. File xuất ra đọc được bằng
+cùng `tools/evaluate_tracking.py` đã dùng để chấm nhãn tay, nên có thể so sánh
+control, treatment và gold mà không đổi định dạng.
 
 Cần `pip install ultralytics`. Chạy được trên CPU, nhưng Colab có GPU sẽ nhanh hơn.
 """
@@ -75,7 +82,10 @@ def main() -> int:
     parser.add_argument("--clip", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--model", default="yolo26n.pt")
-    parser.add_argument("--tracker", default="bytetrack.yaml", help="bytetrack.yaml hoặc botsort.yaml")
+    parser.add_argument(
+        "--tracker", default="bytetrack.yaml",
+        help="tracker YAML, ví dụ bytetrack.yaml hoặc configs/trackers/botsort-reid.yaml",
+    )
     parser.add_argument("--conf", type=float, default=0.25, help="ngưỡng confidence của detector")
     parser.add_argument("--iou", type=float, default=0.7, help="ngưỡng NMS")
     parser.add_argument("--imgsz", type=int, default=960)

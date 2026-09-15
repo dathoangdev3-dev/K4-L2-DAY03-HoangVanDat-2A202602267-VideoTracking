@@ -6,14 +6,17 @@
 | ---: | --- | --- |
 | 0:00-0:15 | Đọc luật gán nhãn, mở CVAT, tạo task cho `clip_02` | task CVAT chạy được |
 | 0:15-0:45 | **Warm-up**: gán `clip_02` (60 frame, 6 track), tự chấm ngay với gold có sẵn | `annotations/clip_02/gt.txt`, IDF1 >= 0.80 |
-| 0:45-2:15 | **Bài chính**: gán `clip_01` (190 frame, 8 track) | `annotations/clip_01/gt.txt` |
+| 0:45-1:30 | **Bài chính, sprint 1**: gán `clip_01`, ưu tiên identity và lưu an toàn | task CVAT đã Save |
+| 1:30-1:40 | **Nghỉ 10 phút**: reload task trước khi rời màn hình | track vẫn còn sau reload |
+| 1:40-2:15 | **Bài chính, sprint 2**: hoàn tất `clip_01` (190 frame, tối thiểu 6 track hợp lệ) | `annotations/clip_01/gt.txt` |
 | 2:15-2:35 | Tự kiểm ba lượt + `check_mot_labels.py` + kiểm chéo với bạn cùng nhóm | `reports/review_partner.md` |
-| 2:35-2:45 | **Khóa/nộp nhãn**, nhận `gold/clip_01/` từ giảng viên | không sửa nhãn trước khi chấm |
+| 2:35-2:45 | **Khóa pre-gold bằng script**, Lab Coach xác nhận hash, rồi mới nhận `gold/clip_01/` | `evidence/pre-gold/clip_01/{gt.txt,manifest.json}` |
 | 2:45-3:15 | Chấm với gold, đọc danh sách lỗi, rework, chạy lại | `outputs/eval_vs_gold.json`, qua cổng |
-| 3:15-3:45 | Colab: YOLO + ByteTrack, so ba chiều | `outputs/model_clip_01.txt` + 2 file JSON |
+| 3:15-3:45 | Colab: ByteTrack control + BoT-SORT-ReID | 2 file MOT + comparison JSON |
 | 3:45-4:00 | Viết báo cáo, commit, push | `reports/REPORT.md` |
 
-Mốc 2:35 là mốc cứng. Gold phát ra rồi thì nhãn nộp trước đó mới có ý nghĩa.
+Mốc 2:35 là mốc cứng. Teaching reference chỉ được mở sau khi snapshot độc lập
+đã tồn tại và hash đã được xác nhận.
 
 ---
 
@@ -202,10 +205,36 @@ rõ. Đó là phát hiện giá trị nhất của bước này. Ghi vào `repor
 
 ---
 
-## 5. Chấm nhãn với gold
+## 5. Khóa pre-gold, rồi chấm với teaching reference
 
-Giảng viên phát thư mục `gold/clip_01/` ở mốc 2:35. Đặt nó vào `gold/` trong repo,
-rồi chạy:
+Trước khi nhận reference, chạy:
+
+```bash
+python3 tools/lock_pre_gold.py
+```
+
+Phải thấy `ĐÃ KHÓA PRE-GOLD`. Gửi Lab Coach hash được in ra và kiểm tra hai file:
+
+```text
+evidence/pre-gold/clip_01/gt.txt
+evidence/pre-gold/clip_01/manifest.json
+```
+
+Script không cho ghi đè nếu annotation hiện tại khác snapshot đã khóa. Cơ chế này
+giữ được bằng chứng trước/sau rõ ràng ngay cả khi commit cuối được tạo sau giờ rework.
+
+Lab Coach phát thư mục `gold/clip_01/` sau khi xác nhận pre-gold lock. Đặt nó vào `gold/` trong repo,
+rồi ghi lại metric **trước rework** từ snapshot đã khóa:
+
+```bash
+python3 tools/evaluate_tracking.py \
+    --pred evidence/pre-gold/clip_01/gt.txt \
+    --gt   gold/clip_01/gt.txt \
+    --seqinfo data/clips/clip_01/seqinfo.ini \
+    --output outputs/eval_pre_gold.json
+```
+
+Sửa trong CVAT, export lại `annotations/clip_01/gt.txt`, rồi chạy metric **sau rework**:
 
 ```bash
 python3 tools/evaluate_tracking.py \
@@ -251,42 +280,55 @@ gì, điểm sau rework.
 
 ---
 
-## 6. Inference model
+## 6. Inference model: ByteTrack vs ReID
 
 Chỉ làm sau khi đã qua cổng annotation — **tự gán trước, rồi mới đối chiếu với
 model**. Chạy model trước rất dễ khiến bạn tin nhầm vào model.
 
 Mở `notebooks/day3_tracking_yolo_bytetrack.ipynb` trên Google Colab. Ở cell đầu,
-sửa `REPO_URL` thành fork của chính bạn — notebook sẽ tự `git clone` về. Nếu chưa
-push nhãn lên GitHub thì clone xong upload tay `gt.txt` vào `annotations/clip_01/`
+sửa `REPO_URL` thành **URL Git thô** của fork public, ví dụ
+`https://github.com/ten-cua-ban/Day3-Lab.git` — không copy Markdown dạng
+`[tên](URL)`. Notebook sẽ tự `git clone` về. Nếu repo của bạn private, Colab không
+tự có quyền clone: chọn **Code → Download ZIP** trên GitHub, upload ZIP vào Colab,
+giải nén thành `/content/Day3-Lab/`, giữ `REPO_URL` mặc định rồi chạy lại cell đầu.
+Nếu chưa push nhãn lên GitHub thì upload tay `gt.txt` vào `annotations/clip_01/`
 bằng bảng Files bên trái Colab.
 
-Gold không nằm trong repo, nên sau khi nhận `gold/clip_01/gt.txt` từ giảng viên,
+Gold không nằm trong repo, nên sau khi nhận `gold/clip_01/gt.txt` từ Lab Coach,
 upload nó lên Colab vào đúng đường dẫn đó. Thiếu gold thì notebook vẫn chạy, chỉ
-bỏ qua hai phép so cần gold. Notebook sẽ:
+bỏ qua các phép so cần gold. Đọc [lý thuyết ReID](docs/day3-reid-theory.md) trước
+khi chạy. Notebook dùng môi trường đã pin và sẽ:
 
-1. cài `ultralytics`;
-2. chạy **YOLO26 + ByteTrack** trên `clip_01`, giữ `persist=True` qua từng frame;
-3. xuất `outputs/model_clip_01.txt` đúng định dạng MOT 1.1;
-4. chấm **ba chiều** bằng chính `tools/evaluate_tracking.py`;
-5. vẽ frame có bbox của model và của bạn chồng lên nhau để soi chỗ lệch.
+1. cài phiên bản `ultralytics` và `lap` đã khóa cho lab, rồi ghi actual version;
+2. chạy **YOLO26 + ByteTrack** làm control trên `clip_01`;
+3. chạy **YOLO26 + BoT-SORT-ReID** với cùng weights, frame order, confidence,
+   IoU, image size và COCO classes;
+4. xuất `model_bytetrack_clip_01.txt` và `model_reid_clip_01.txt` theo MOT 1.1;
+5. chấm cả hai với gold, rồi vẽ frame treatment và nhãn của bạn chồng lên nhau.
 
-Ba phép so, mỗi phép trả lời một câu khác nhau:
+BoT-SORT-ReID thêm appearance embedding vào bước association. Nó không sửa bbox
+YOLO bỏ sót và không chứng minh danh tính xe ngoài đời. So **IDF1, AssA, IDSW**
+trước, rồi xem DetA/FP/FN và frame sequence để mô tả treatment tốt hơn, tệ hơn
+hay không đổi đáng kể. Đây là system comparison: ByteTrack và BoT-SORT khác
+implementation, nên không kết luận ReID một mình là nguyên nhân.
 
 | So sánh | Trả lời |
 | --- | --- |
 | bạn vs gold | nhãn của bạn tốt đến đâu |
-| model vs gold | model giỏi đến đâu trên clip này |
-| model vs bạn | chỗ nào bạn và model không đồng ý — đây là chỗ đáng soi nhất |
+| ByteTrack vs gold | control giữ identity tốt đến đâu |
+| BoT-SORT + ReID vs gold | treatment appearance-assisted thay đổi tracking thế nào |
+| ReID vs bạn | chỗ treatment và nhãn tay không đồng ý — đây là chỗ đáng soi nhất |
 
 Cách đọc chỗ không đồng ý:
 
-- **Model có bbox, bạn không** → thường bạn bỏ sót xe nhỏ hoặc xe ở rìa. Kiểm tra ngay.
-- **Bạn có bbox, model không** → thường model bỏ sót xe bị che. Bạn nhiều khả năng đúng.
-- **Cùng có bbox, khác ID** → soi kỹ nhất. Một trong hai đã gán sai ID lúc hai xe cắt nhau.
+- **Model có bbox, bạn không** → có thể bạn bỏ sót xe nhỏ/rìa, hoặc model là FP. Kiểm tra frame sequence.
+- **Bạn có bbox, model không** → có thể model bỏ sót xe bị che. Bạn nhiều khả năng đúng.
+- **Cùng có bbox, khác ID** → soi kỹ nhất: motion, IoU và appearance cue nào hợp lý hơn?
 
-**Model không phải đáp án.** Nó chỉ chỉ chỗ đáng ngờ. Gold mới là đáp án, và ngay cả
-gold cũng do người gán.
+**Model không phải đáp án.** Nó chỉ chỉ chỗ đáng ngờ. Teaching reference trong
+`gold/` là bản nhãn đã review/adjudicate cho bài học nhưng vẫn có thể có finding.
+Nếu nghi ngờ reference, ghi frame–ID–rule–evidence để Lab Coach đóng là `fixed`,
+`needs-review` hoặc `not-a-defect`; không tự sửa reference.
 
 ---
 
@@ -294,12 +336,12 @@ gold cũng do người gán.
 
 ```bash
 git checkout -b nop-bai-ngay3
-git add annotations/ outputs/ reports/ GUIDELINE_MINI.md
+git add annotations/ evidence/pre-gold/ outputs/ reports/ GUIDELINE_MINI.md
 git commit -m "Ngày 3: nhãn tracking clip_01 + clip_02, kết quả đánh giá, báo cáo"
 git push origin nop-bai-ngay3
 ```
 
-Rồi mở Pull Request về repo gốc (hoặc nộp theo cách giảng viên hướng dẫn).
+Rồi mở Pull Request về repo gốc (hoặc nộp theo kênh Lab Coach đã công bố).
 
-Đừng commit: thư mục `outputs/vis_*/` (ảnh đã vẽ bbox, rất nặng), file `.pt`, và
-thư mục `gold/` nếu giảng viên dặn không phát tán.
+Đừng commit: thư mục `outputs/vis_*/` (ảnh đã vẽ bbox, rất nặng), file `.pt`, hoặc
+thư mục `gold/`. Phải commit snapshot/manifest trong `evidence/pre-gold/`.

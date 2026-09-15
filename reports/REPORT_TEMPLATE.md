@@ -38,11 +38,17 @@ Ca nào hai người quyết khác nhau, và luật nào còn thiếu trong `GUI
 
 `...`
 
-## 3. Chấm với gold — trước và sau rework
+## 3. Pre-gold lock và chấm trước/sau rework
+
+| Evidence | Giá trị |
+| --- | --- |
+| SHA-256 từ `evidence/pre-gold/clip_01/manifest.json` | `...` |
+| Thời điểm khóa | `...` |
+| Số row / frame / track trước khi mở reference | `...` |
 
 | | HOTA | DetA | AssA | LocA | IDF1 | MOTA | MOTP | FP | FN | IDSW |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Lần chấm đầu | | | | | | | | | | |
+| Bản pre-gold | | | | | | | | | | |
 | Sau rework | | | | | | | | | | |
 
 Qua cổng (`IDF1 >= 0.80`, `MOTA >= 0.75`, `MOTP >= 0.70`): **có / chưa**
@@ -55,15 +61,23 @@ Sau khi đọc danh sách lỗi, bạn đã sửa cụ thể những gì? Ghi th
 | | | | |
 | | | | |
 
-## 4. Kết quả model và so sánh ba chiều
+## 4. Kết quả model: ByteTrack control vs ReID treatment
 
-Cấu hình: model `...`, tracker `...`, conf `...`, imgsz `...`
+Cấu hình từ `outputs/model_run_config.json`:
+
+| Mục | Giá trị |
+| --- | --- |
+| Python / ultralytics / torch / lap | `...` |
+| weights / hai tracker | `...` |
+| conf / IoU / imgsz / classes | `...` |
+| device | `...` |
 
 | So sánh | HOTA | DetA | AssA | LocA | IDF1 | MOTA | MOTP | FP | FN | IDSW |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | bạn vs gold | | | | | | | | | | |
-| model vs gold | | | | | | | | | | |
-| model vs bạn | | | | | | | | | | |
+| ByteTrack control vs gold | | | | | | | | | | |
+| BoT-SORT + ReID vs gold | | | | | | | | | | |
+| ReID vs bạn | | | | | | | | | | |
 
 ## 5. Phân tích — năm câu hỏi
 
@@ -71,19 +85,19 @@ Cấu hình: model `...`, tracker `...`, conf `...`, imgsz `...`
 
 `...`
 
-**2. DetA và AssA của model lệch nhau bao nhiêu? Cái nào kéo HOTA xuống — model không tìm ra xe, hay tìm ra rồi nhưng đánh mất ID?**
+**2. ByteTrack control và BoT-SORT + ReID treatment khác nhau thế nào ở IDF1, AssA và IDSW? Dẫn một frame sequence để giải thích treatment tốt hơn, tệ hơn hoặc không đổi đáng kể. Nhắc rõ đây không cô lập causal effect của ReID vì hai tracker implementation khác.**
 
 `...`
 
-**3. Một chỗ bạn đúng và model sai (frame, ID, vì sao):**
+**3. DetA, FP và FN đổi thế nào? Lỗi còn lại là detector hay association?**
 
 `...`
 
-**4. Một chỗ model đúng và bạn sai (frame, ID, vì sao):**
+**4. Một chỗ bạn đúng và ReID sai (frame, ID, vì sao):**
 
 `...`
 
-**5. Trong ba loại bất đồng giữa bạn và model, loại nào nhiều nhất? Nó nói gì về clip này?**
+**5. Một chỗ ReID làm bạn xem lại annotation (frame, ID, vì sao), hoặc lý do evidence cho thấy model sai:**
 
 `...`
 
@@ -97,9 +111,12 @@ Bạn sẽ sửa gì trong `GUIDELINE_MINI.md`, và đổi gì trong quy trình 
 
 - [ ] `annotations/clip_01/gt.txt`
 - [ ] `annotations/clip_02/gt.txt`
+- [ ] `evidence/pre-gold/clip_01/gt.txt` và `manifest.json`
 - [ ] `GUIDELINE_MINI.md` đã điền
 - [ ] `outputs/eval_vs_gold.json`
-- [ ] `outputs/model_clip_01.txt`
-- [ ] `outputs/eval_model_vs_gold.json`, `outputs/eval_model_vs_me.json`
+- [ ] `outputs/model_bytetrack_clip_01.txt`
+- [ ] `outputs/model_reid_clip_01.txt`
+- [ ] `outputs/model_run_config.json`
+- [ ] `outputs/eval_bytetrack_vs_gold.json`, `outputs/eval_reid_vs_gold.json`, `outputs/eval_reid_vs_me.json`
 - [ ] `reports/review_partner.md`
 - [ ] `reports/REPORT.md` (file này)

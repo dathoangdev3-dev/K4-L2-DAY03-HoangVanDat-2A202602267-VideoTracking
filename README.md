@@ -1,100 +1,147 @@
-# Bài thực hành Ngày 3 - Gán nhãn tracking cho video giao thông
+# Ngày 3 — Dữ liệu Video Tracking
 
-Ngày 2 bạn vẽ bbox trên ảnh tĩnh. Hôm nay dữ liệu có thêm một chiều nữa: **thời gian**.
-Trong bốn giờ, bạn sẽ gán nhãn tracking cho một clip 15 giây, kiểm tra chất lượng
-nhãn bằng gold set, rồi cho một hệ thống tracking tự động chạy trên đúng clip đó và
-so kết quả của model với nhãn của mình:
+**Đối tượng:** học viên Giai đoạn 1, lộ trình chung **Level 2 → Level 3**.
+**Thời lượng:** 240 phút. **Repo đề bài:** `K4-L2-L3-DAY03-VideoTracking`.
 
-```text
-clip video -> CVAT Track Mode -> export MOT 1.1 -> QC với gold set
-           -> YOLO + ByteTrack chạy cùng clip -> so ba chiều -> báo cáo
-```
+**Hình thức:** làm cá nhân hoặc phối hợp theo nhóm. Dù chọn cách nào, mỗi học
+viên vẫn nộp **một repo cá nhân** để Lab Coach xác minh phần việc và evidence
+độc lập. **Nơi nộp:** VLearn (dán link repo cá nhân). **Hạn nộp mặc định:**
+23:59, múi giờ `Asia/Ho_Chi_Minh`, ngày diễn ra lab; chỉ thông báo ngoại lệ của
+Key Coach mới thay thế mốc này.
 
-Nhãn tracking = nhãn detection + một cột: `track_id`. Cột đó máy **không suy ra
-được từ một frame riêng lẻ** — nó là quyết định của bạn, và nó là thứ được chấm
-hôm nay.
+Ngày 2 bạn gán nhãn từng ảnh. Hôm nay, một chiếc xe phải giữ được **cùng một
+`track_id` qua nhiều frame**. Trong bốn giờ, bạn sẽ gán nhãn bằng CVAT Track
+Mode, tự kiểm ba lượt, kiểm chéo, export MOT 1.1, đối chiếu với teaching
+reference sau khi khóa bài độc lập, rồi chạy ByteTrack và BoT-SORT + ReID trên
+chính clip đó.
 
-## Mục tiêu học tập
+> Làm nhãn độc lập trước; chỉ xem teaching reference hoặc model sau mốc khóa
+> pre-gold. Model là công cụ chẩn đoán, không phải đáp án.
 
-Sau lab, bạn có thể:
+## Làm cá nhân hoặc theo nhóm
 
-1. Gán nhãn tracking trong CVAT **Track Mode**, dùng keyframe + interpolation đúng chỗ.
-2. Xử lý ba tình huống khó của video: vật thể **bị che tạm thời**, **vào/ra khung hình**,
-   và **hai vật thể cắt nhau**.
-3. Export đúng định dạng **MOT 1.1** — định dạng giữ được `track_id`.
-4. Đọc và dùng **HOTA, DetA, AssA, IDF1, MOTA** để tìm lỗi trong nhãn của chính mình,
-   chứ không chỉ để biết điểm cao hay thấp.
-5. Chạy pipeline **tracking-by-detection** (YOLO + ByteTrack) và giải thích được
-   chỗ model và người không đồng ý với nhau.
+Bạn có thể chọn một trong hai cách sau, với cùng rubric và cùng chuẩn đầu ra:
+
+- **Cá nhân:** tự làm toàn bộ annotation, review, report và nộp repo của mình.
+- **Nhóm:** được thảo luận quy tắc, hỗ trợ thao tác và review chéo. Tuy nhiên,
+  mỗi người phải tự tạo annotation/evidence pre-gold của mình, tự hoàn thiện
+  report và nộp repo mang tên/MSSV của mình. Mỗi repo của thành viên nhóm phải
+  có [TEAM.md](TEAM.md) đã điền để công khai phần việc và phần học được của từng
+  người.
+
+Quy định đầy đủ về cách nộp, checkpoint và liêm chính học thuật lần lượt ở
+[SUBMISSION.md](SUBMISSION.md), [CHECKPOINTS.md](CHECKPOINTS.md) và
+[RULES.md](RULES.md).
+
+## Sau bài thực hành, bạn có thể
+
+1. Tạo Rectangle **Track** trong CVAT, dùng keyframe và interpolation đúng chỗ.
+2. Giữ identity nhất quán khi xe bị che, vào/ra khung, hoặc cắt nhau.
+3. Export đúng **MOT 1.1** để không mất `track_id`.
+4. Dùng HOTA, IDF1, MOTA và MOTP để tìm lỗi cần sửa trong nhãn của mình.
+5. Giải thích ReID là appearance cue và đọc một so sánh ByteTrack với
+   BoT-SORT + ReID bằng frame/ID evidence.
+6. Ghi lại quy tắc, lỗi peer review và lần sửa để người khác tái hiện được.
+
+## Dữ liệu và quy ước
+
+| Thành phần | Quy ước của bài |
+| --- | --- |
+| `clip_02` | warm-up: 60 frame, 4.8 giây, có reference để tự kiểm ngay |
+| `clip_01` | bài chính: 190 frame, 15.2 giây; reference chỉ phát sau pre-gold lock |
+| Label | duy nhất `vehicle`: xe bốn bánh |
+| Không gán | người, xe đạp, xe máy/mô tô, biển báo, xe xuất hiện trong quảng cáo |
+| Bbox | chỉ ôm phần vật thể đang nhìn thấy; không đoán phần bị che hoặc ngoài khung |
+
+Không đổi tên/thứ tự frame, không sửa nhãn warm-up có sẵn, không sửa file gold
+sau khi nhận, và không dùng model để gợi ý box trước khi hoàn thành annotation.
+Xem nguồn dữ liệu tại [data/README.md](data/README.md) và schema chi tiết tại
+[CVAT_TASK_SPEC.md](CVAT_TASK_SPEC.md).
+
+## Lịch thực hành 240 phút
+
+| Phút | Hoạt động | Minh chứng |
+| ---: | --- | --- |
+| 0–15 | Preflight, đọc rule, tạo task warm-up | đúng label `vehicle`, Track Mode |
+| 15–45 | Gán `clip_02`, export MOT 1.1, tự kiểm | file MOT hợp lệ |
+| 45–90 | Gán `clip_01` độc lập, sprint 1 | giữ identity, Save trước khi nghỉ |
+| 90–100 | Nghỉ 10 phút | reload task; chưa mở reference/model |
+| 100–135 | Hoàn tất `clip_01`, sprint 2 | tối thiểu 6 track hợp lệ |
+| 135–155 | Tự kiểm ba lượt và peer review | frame–ID–lỗi–cách sửa trong checklist |
+| 155–165 | Export cuối, khóa pre-gold | snapshot và manifest SHA-256 |
+| 165–195 | Nhận reference, evaluate, rework | metric trước/sau và change log |
+| 195–225 | Notebook: ByteTrack và BoT-SORT + ReID | hai model MOT và comparison evidence |
+| 225–237 | Hoàn tất report, kiểm submission | đủ artifact, không còn placeholder |
+| 237–240 | Commit/push và nộp link | commit cuối tạo được |
+
+Mốc phút **155** là cổng cứng: không xem `gold/clip_01/gt.txt` và không chạy
+model trước khi bạn khóa bản độc lập.
+
+## Ba nguyên tắc không được đảo thứ tự
+
+- Gán nhãn độc lập trước khi xem teaching reference hoặc model.
+- Chạy `python3 tools/lock_pre_gold.py` và gửi hash cho Lab Coach trước khi nhận
+  `gold/clip_01/gt.txt`.
+- Model output là baseline để chẩn đoán, không phải đáp án.
+
+## Bắt đầu
+
+1. Mở [hướng dẫn thao tác có ảnh thật](lab-guide.html) trong browser; giữ cả thư
+   mục `assets/guide/` cạnh file HTML. Nếu không mở được HTML, dùng [GUIDE.md](GUIDE.md).
+2. Đọc [CVAT_SETUP.md](CVAT_SETUP.md), rồi [CVAT_TASK_SPEC.md](CVAT_TASK_SPEC.md)
+   trước khi tạo task.
+3. Làm `clip_02` trước để tự kiểm đường export MOT 1.1.
+4. Làm `clip_01`, dùng [GUIDELINE_MINI.md](GUIDELINE_MINI.md) để ghi quy tắc và
+   ba ca mơ hồ thật.
+5. Chạy validator, khóa pre-gold, nhận reference từ Lab Coach, rồi mới evaluate/rework.
+6. Đọc [ReID theory](docs/day3-reid-theory.md) và chạy notebook sau khi annotation core xong.
+
+### Mở notebook trên Google Colab
+
+1. Fork repo này sang tài khoản GitHub cá nhân nếu bạn cần commit/nộp bài từ GitHub.
+2. Tải [notebook](notebooks/day3_tracking_yolo_bytetrack.ipynb) về máy.
+3. Mở [Google Colab](https://colab.research.google.com/) → **File → Upload notebook**.
+4. Trong Cell 1, đặt `REPO_URL` là URL Git thô của repo cá nhân, ví dụ
+   `https://github.com/ten-cua-ban/K4-L2-L3-DAY03-HoVaTen-MSSV-VideoTracking.git`.
+   Không dán link ở dạng `[tên](URL)`.
+5. Chạy Cell 1; đúng khi in ra `ROOT = .../Day3-Lab`. Sau đó chạy các cell theo thứ tự.
+
+Nếu bạn chưa push nhãn, clone xong rồi upload `gt.txt` vào
+`annotations/clip_01/`. Nếu repo riêng tư và Colab không clone được, tải ZIP từ
+GitHub, upload vào Colab, giải nén thành `/content/Day3-Lab/`, rồi chạy lại Cell 1.
 
 ## Bài nộp
 
-| Tệp | Nội dung |
-| --- | --- |
-| `annotations/clip_01/gt.txt` | nhãn tracking của bạn cho clip chính (export MOT 1.1) |
-| `annotations/clip_02/gt.txt` | nhãn clip warm-up |
-| `GUIDELINE_MINI.md` | luật ID của nhóm bạn + ít nhất ba ca mơ hồ đã gặp và cách quyết |
-| `outputs/eval_vs_gold.json` | kết quả chấm nhãn với gold (sau khi giảng viên phát) |
-| `outputs/model_clip_01.txt` | kết quả tracking của model, định dạng MOT |
-| `outputs/eval_model_vs_gold.json`, `outputs/eval_model_vs_me.json` | hai phép so còn lại |
-| `reports/REPORT.md` | báo cáo, điền từ `reports/REPORT_TEMPLATE.md` |
-| `reports/review_partner.md` | danh sách lỗi tìm được trong clip của bạn cùng nhóm + reviewer checklist |
+Tạo repo cá nhân theo mẫu
+`K4-L2-L3-DAY03-HoVaTen-MSSV-VideoTracking` (không dấu, không khoảng trắng),
+push lên GitHub và dán link repo đó vào VLearn trước hạn nộp. Nếu làm nhóm, mỗi
+thành viên vẫn dùng tên/MSSV của chính mình trong tên repo và điền
+[TEAM.md](TEAM.md). Danh mục artifact, lệnh tự kiểm và các điều cấm nằm trong
+[SUBMISSION.md](SUBMISSION.md); đây là nguồn chuẩn trước khi nộp.
 
-Đọc [GUIDE.md](GUIDE.md) theo thứ tự thao tác và đối chiếu [RUBRIC.md](RUBRIC.md)
-trước khi nộp.
+## Tài liệu chính
 
-## Cấu trúc thư mục
+- [Hướng dẫn từng bước](GUIDE.md)
+- [Hướng dẫn CVAT và Colab bằng ảnh chụp thật](lab-guide.html)
+- [Task specification](CVAT_TASK_SPEC.md)
+- [Phiếu quy tắc annotation](GUIDELINE_MINI.md)
+- [Rubric](RUBRIC.md)
+- [Hướng dẫn nộp bài](SUBMISSION.md)
+- [Checkpoint và self-check](CHECKPOINTS.md)
+- [Quy tắc làm bài](RULES.md)
+- [Mẫu khai báo nhóm — chỉ dùng khi làm nhóm](TEAM.md)
+- [Template report](reports/REPORT_TEMPLATE.md)
+- [Reviewer checklist](reports/REVIEW_PARTNER_TEMPLATE.md)
+- [Lý thuyết ReID](docs/day3-reid-theory.md)
 
-```text
-Day3-Lab/
-  data/clips/clip_01/     190 frame, 8 track — BÀI CHÍNH, không có gold khi pull
-  data/clips/clip_02/      60 frame, 6 track — warm-up, gold có sẵn ở gt/gt.txt
-  annotations/            nhãn của bạn đặt ở đây
-  gold/                   trống; giảng viên phát gold clip_01 vào đây ở mốc 2:35
-  tools/                  check / evaluate / visualize / run_tracker
-  notebooks/              notebook Colab chạy YOLO + ByteTrack
-  reports/                mẫu báo cáo
-  outputs/                kết quả chấm và kết quả model
-```
+## Hỗ trợ và phần mở rộng
 
-Không đổi tên/đổi thứ tự frame, không sửa `data/clips/clip_02/gt/gt.txt`, và không
-sửa gold sau khi nhận.
+- Lần đầu dùng CVAT: đi lần lượt theo `lab-guide.html`; dừng kiểm sau box đầu,
+  sau warm-up export và trước pre-gold lock.
+- Đã có kinh nghiệm: có thể đi thẳng core path, nhưng không được bỏ QC, evidence
+  hay peer review.
+- Hoàn thành sớm: chỉ sau core mới làm stretch; giữ nguyên evidence và giải thích
+  trade-off, không gán thêm dữ liệu để lấy lợi thế.
 
-## Công cụ chấm
-
-Tất cả script trong `tools/` **chỉ dùng thư viện chuẩn của Python** — chạy được ngay,
-không cần cài gì (trừ `visualize_tracks.py` cần Pillow và `run_tracker.py` cần
-ultralytics). Các chỉ số HOTA / DetA / AssA / LocA / MOTA / MOTP / IDF1 đã được
-đối chiếu khớp tuyệt đối với [TrackEval](https://github.com/JonathonLuiten/TrackEval),
-bộ đánh giá chính thức của MOTChallenge — xem `instructor/tools/validate_metrics.py`.
-
-```bash
-# 1. kiểm định dạng, trước khi nộp  (không cần gold)
-python3 tools/check_mot_labels.py --clip data/clips/clip_01 --tracks annotations/clip_01/gt.txt
-
-# 2. chấm nhãn với gold  (sau khi giảng viên phát)
-python3 tools/evaluate_tracking.py --pred annotations/clip_01/gt.txt \
-    --gt gold/clip_01/gt.txt --seqinfo data/clips/clip_01/seqinfo.ini \
-    --output outputs/eval_vs_gold.json
-```
-
-## Điều kiện đi tiếp
-
-Sau khi chấm với gold, bạn qua cổng annotation khi cả ba điều kiện cùng đúng:
-
-| Chỉ số | Ngưỡng | Bắt lỗi gì |
-| --- | ---: | --- |
-| `IDF1` | >= 0.80 | ID có bị nhảy, bị tách, bị gán nhầm không |
-| `MOTA` | >= 0.75 | có bỏ sót xe hoặc vẽ thừa bbox không |
-| `MOTP` | >= 0.70 | bbox có khít không |
-
-Chưa đạt thì **sửa nhãn rồi chạy lại** — `evaluate_tracking.py` in ra sẵn danh sách
-frame và ID cần sửa, phân theo đúng năm loại lỗi trong slide. Đây là chỉ số chất
-lượng *annotation*, không phải chỉ số của model.
-
-## Ghi chú dữ liệu
-
-Nguồn gốc, giấy phép và định dạng nhãn: xem [data/README.md](data/README.md).
-Clip chỉ gán **xe bốn bánh**; người đi bộ, xe đạp và **xe máy** nằm ngoài schema,
-gán thêm sẽ bị tính là bbox thừa. Không thêm video/ảnh cá nhân, biển số, hay dữ
-liệu nhạy cảm vào repository hoặc Colab công khai.
+Khi gặp lỗi, giữ nguyên thông báo lỗi và báo Lab Coach. Không tự đổi schema,
+không sửa index frame bằng tay, và không dùng output model làm nhãn tham chiếu.

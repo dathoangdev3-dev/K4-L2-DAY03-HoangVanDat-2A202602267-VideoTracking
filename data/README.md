@@ -4,8 +4,12 @@ Hai clip cảnh giao thông đô thị, đã cắt sẵn và đánh số lại c
 
 | Clip | Frame | Kích thước | FPS | Thời lượng | Track | Bbox | Ground truth |
 | --- | ---: | --- | ---: | ---: | ---: | ---: | --- |
-| `clip_01` | 190 | 960x540 | 12.5 | 15.2 s | 8 | 573 | giảng viên phát ở mốc 2:35 |
+| `clip_01` | 190 | 960x540 | 12.5 | 15.2 s | ≥ 6* | — | Lab Coach mở sau pre-gold lock ở mốc 2:35 |
 | `clip_02` | 60 | 960x540 | 12.5 | 4.8 s | 6 | 227 | có sẵn tại `clip_02/gt/gt.txt` |
+
+\* Đây là yêu cầu đầu ra độc lập, không phải số track của teaching reference.
+Số track/bbox reference của `clip_01` chỉ được mở sau pre-gold lock để không làm
+lệch quyết định annotation.
 
 `clip_01` là bài chính. `clip_02` là clip warm-up: nhãn đúng đã nằm sẵn trong repo
 để bạn tự hiệu chỉnh tay nghề trước khi vào bài chính — hãy gán nó trước, chấm
@@ -73,3 +77,7 @@ Không dùng dữ liệu ngoài repo để đi tìm nhãn — xem phần cổng 
 Đã lọc bỏ toàn bộ *ignored region* của UA-DETRAC: hai clip này được chọn trong số
 năm sequence không có vùng bỏ qua nào, nên luật gán nhãn gọn đúng một câu —
 **mọi xe bốn bánh nhìn thấy được đều phải có bbox**.
+
+Metadata license của bản phát hành lại là evidence hiện có, không phải kết luận
+pháp lý về toàn bộ quyền upstream. Trước khi public redistribution ngoài phạm vi
+pilot/lớp, repo owner phải kiểm lại provenance, attribution, terms và privacy.
