@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "locked_at_utc": "2026-09-15T03:40:12.333830+00:00",
+  "source": "annotations/clip_01/gt.txt",
+  "snapshot": "evidence/pre-gold/clip_01/gt.txt",
+  "sha256": "64250cf66ef07b069ea7ee2af3a92740366e7357d7b16a6e0fd6908af1815c75",
+  "bytes": 37569,
+  "rows": 639,
+  "frames": 190,
+  "track_ids": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "git_head_before_lock": "c6a703fefff9dc641f3636f2388aa5c1270fd0a0"
+}
