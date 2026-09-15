@@ -10,8 +10,8 @@ Ngày: 14/09/2026
 | Mục | Giá trị |
 | --- | --- |
 | Công cụ | CVAT (app.cvat.ai) |
-| Thời gian gán `clip_02` (warm-up) | ~30 phút |
-| Thời gian gán `clip_01` | ~90 phút |
+| Thời gian gán `clip_02` (warm-up) | ~15 phút |
+| Thời gian gán `clip_01` | ~30 phút |
 | Số track đã vẽ trong `clip_01` | 8 |
 | Số keyframe trung bình mỗi track | ~6 keyframe/track |
 
